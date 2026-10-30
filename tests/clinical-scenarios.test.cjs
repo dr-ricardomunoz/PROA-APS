@@ -1,0 +1,32 @@
+const fs=require('node:fs');
+const vm=require('node:vm');
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+const source=html.match(/<script>([\s\S]*?)<\/script>/);
+assert.ok(source,'Se encontró el script de la aplicación');
+const node={value:'',type:'text',classList:{toggle(){},add(){},remove(){}},addEventListener(){},focus(){}};
+const document={getElementById(){return node}};
+const window={innerWidth:1200};
+vm.runInNewContext(source[1],{document,window,navigator:{clipboard:{}},Number,Intl,console});
+const decide=window.PROA_ITU_DECIDE;
+const base=(changes={})=>Object.assign({group:'woman',weeks:null,age:null,weight:null,presentation:'lower',sepsis:false,unable:false,obstruct:false,anomaly:false,catheter:false,recurrent:false,failed:false,resistant:false,endouro:false,prostate:false,culture:'none',allergy:'none',gfr:90,g6pd:false},changes);
+function has(xs,needle){return xs.some(x=>String(x).toLowerCase().includes(needle.toLowerCase()));}
+function test(name,fn){fn();console.log('✓ '+name);}
+test('Cistitis típica adulta: tratamiento y sin cultivo rutinario',()=>{const r=decide(base());assert.ok(has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.exams,'no requiere urocultivo'));});
+test('Bacteriuria asintomática no gestante: no tratar',()=>{const r=decide(base({presentation:'asymptomatic',culture:'positive'}));assert.equal(r.drugs.length,0);assert.ok(has(r.actions,'No tratar'));});
+test('Bacteriuria asintomática gestante con cultivo positivo: tratar',()=>{const r=decide(base({group:'pregnant',weeks:20,presentation:'asymptomatic',culture:'positive'}));assert.ok(has(r.drugs.map(x=>x.name),'Cefadroxilo'));assert.ok(has(r.follow,'2–3 días'));});
+test('Bacteriuria asintomática gestante sin cultivo: no antibiótico',()=>{const r=decide(base({group:'pregnant',weeks:20,presentation:'asymptomatic'}));assert.equal(r.drugs.length,0);});
+test('Embarazo 37 semanas: bloquea nitrofurantoína',()=>{const r=decide(base({group:'pregnant',weeks:37}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.warnings,'36'));});
+test('Embarazo 33 semanas: advertencia cotrimoxazol',()=>{const r=decide(base({group:'pregnant',weeks:33}));assert.ok(has(r.warnings,'cotrimoxazol'));});
+test('Pielonefritis en embarazo: derivación hospitalaria',()=>{const r=decide(base({group:'pregnant',weeks:16,presentation:'upper'}));assert.ok(has([r.priority],'hospitalaria'));assert.equal(r.drugs.length,0);});
+test('Niño 2 meses: derivación hospitalaria',()=>{const r=decide(base({group:'child',age:2}));assert.ok(has([r.priority],'hospitalaria'));});
+test('Pediatría: cefadroxilo calculado para 20 kg',()=>{const r=decide(base({group:'child',age:60,weight:20}));assert.ok(has(r.drugs.map(x=>x.dose),'500 mg'));});
+test('Niño fiebre: no antibiótico de cistitis automática',()=>{const r=decide(base({group:'child',age:60,presentation:'upper'}));assert.equal(r.drugs.length,0);});
+test('Varón con prostatitis: evita nitrofurantoína',()=>{const r=decide(base({group:'man',prostate:true}));assert.equal(r.drugs.length,0);});
+test('ITU asociada a catéter: urocultivo obligatorio',()=>{const r=decide(base({catheter:true}));assert.ok(has(r.exams,'urocultivo'));assert.equal(r.drugs.length,0);});
+test('Sepsis: derivación urgente sin régimen automático',()=>{const r=decide(base({sepsis:true}));assert.ok(has([r.priority],'urgente'));assert.equal(r.drugs.length,0);});
+test('Función renal 25: no sugiere nitrofurantoína',()=>{const r=decide(base({gfr:25}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));});
+test('Recurrencia: solicitar urocultivo',()=>{const r=decide(base({recurrent:true}));assert.ok(has(r.exams,'urocultivo'));});
+test('No hay datos gestacionales: detener esquema',()=>{const r=decide(base({group:'pregnant'}));assert.equal(r.drugs.length,0);});
+console.log('OK: 16 escenarios clínicos comprobados.');
