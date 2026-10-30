@@ -15,7 +15,7 @@ function has(xs,needle){return xs.some(x=>String(x).toLowerCase().includes(needl
 function test(name,fn){fn();console.log('✓ '+name);}
 test('Cistitis típica adulta: tratamiento y sin cultivo rutinario',()=>{const r=decide(base());assert.ok(has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.exams,'no requiere urocultivo'));});
 test('Bacteriuria asintomática no gestante: no tratar',()=>{const r=decide(base({presentation:'asymptomatic',culture:'positive'}));assert.equal(r.drugs.length,0);assert.ok(has(r.actions,'No tratar'));});
-test('Bacteriuria asintomática gestante con cultivo positivo: tratar',()=>{const r=decide(base({group:'pregnant',weeks:20,presentation:'asymptomatic',culture:'positive'}));assert.ok(has(r.drugs.map(x=>x.name),'Cefalexina'));assert.ok(has(r.follow,'2–3 días'));});
+test('Bacteriuria asintomática gestante con cultivo positivo: tratar',()=>{const r=decide(base({group:'pregnant',weeks:20,presentation:'asymptomatic',culture:'positive'}));assert.ok(has(r.drugs.map(x=>x.name),'Cefadroxilo'));assert.ok(has(r.follow,'2–3 días'));});
 test('Bacteriuria asintomática gestante sin cultivo: no antibiótico',()=>{const r=decide(base({group:'pregnant',weeks:20,presentation:'asymptomatic'}));assert.equal(r.drugs.length,0);});
 test('Embarazo 37 semanas: bloquea nitrofurantoína',()=>{const r=decide(base({group:'pregnant',weeks:37}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.warnings,'36'));});
 test('Embarazo 33 semanas: se restringe nitrofurantoína por discrepancia PROA',()=>{const r=decide(base({group:'pregnant',weeks:33}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.warnings,'28 y 35'));});
@@ -23,7 +23,7 @@ test('Pielonefritis en embarazo: derivación hospitalaria',()=>{const r=decide(b
 test('Niño 2 meses: derivación hospitalaria',()=>{const r=decide(base({group:'child',age:2}));assert.ok(has([r.priority],'hospitalaria'));});
 test('Pediatría: cefadroxilo calculado para 20 kg',()=>{const r=decide(base({group:'child',age:60,weight:20}));assert.ok(has(r.drugs.map(x=>x.dose),'500 mg'));});
 test('Niño fiebre: no antibiótico de cistitis automática',()=>{const r=decide(base({group:'child',age:60,presentation:'upper'}));assert.equal(r.drugs.length,0);});
-test('Varón con prostatitis: evita nitrofurantoína',()=>{const r=decide(base({group:'man',prostate:true}));assert.equal(r.drugs.length,0);});
+test('Prostatitis: empírico ciprofloxacino del PROA, no nitrofurantoína',()=>{const r=decide(base({group:'man',prostate:true}));assert.ok(has(r.drugs.map(x=>x.name),'Ciprofloxacino'));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.drugs.map(x=>x.dose),'14 días'));});
 test('ITU asociada a catéter: urocultivo obligatorio',()=>{const r=decide(base({catheter:true}));assert.ok(has(r.exams,'urocultivo'));assert.equal(r.drugs.length,0);});
 test('Sepsis: derivación urgente sin régimen automático',()=>{const r=decide(base({sepsis:true}));assert.ok(has([r.priority],'urgente'));assert.equal(r.drugs.length,0);});
 test('Función renal 25: no sugiere nitrofurantoína',()=>{const r=decide(base({gfr:25}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));});
@@ -31,10 +31,17 @@ test('Recurrencia: solicitar urocultivo',()=>{const r=decide(base({recurrent:tru
 test('No hay datos gestacionales: detener esquema',()=>{const r=decide(base({group:'pregnant'}));assert.equal(r.drugs.length,0);});
 test('Embarazo tercer trimestre 31 semanas: nitrofurantoína requiere validación',()=>{const r=decide(base({group:'pregnant',weeks:31}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.warnings,'28 y 35'));});
 test('Cistitis con urocultivo negativo: no pauta automática',()=>{const r=decide(base({culture:'negative'}));assert.equal(r.drugs.length,0);assert.ok(has(r.actions,'Urocultivo negativo'));});
-test('Embarazo 15 semanas: nitrofurantoína y cefalexina, sin advertencias de cotrimoxazol',()=>{const r=decide(base({group:'pregnant',weeks:15,gfr:null,allergy:'unknown'}));assert.ok(has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.drugs.map(x=>x.name),'Cefalexina'));assert.ok(!has(r.warnings,'Cotrimoxazol'));assert.ok(has(r.warnings,'alergias'));assert.ok(has(r.warnings,'función renal'));});
-test('Síntomas prostáticos marcados: se omiten antibióticos de cistitis',()=>{const r=decide(base({group:'man',prostate:true}));assert.equal(r.drugs.length,0);assert.ok(has([r.priority],'prostatitis'));});
+test('Embarazo 15 semanas: nitrofurantoína y cefadroxilo institucional',()=>{const r=decide(base({group:'pregnant',weeks:15,gfr:null,allergy:'unknown'}));assert.ok(has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.drugs.map(x=>x.name),'Cefadroxilo'));assert.ok(!has(r.drugs.map(x=>x.name),'Cefalexina'));assert.ok(has(r.warnings,'alergias'));assert.ok(has(r.warnings,'función renal'));});
+test('Síntomas prostáticos: tratamiento diferente y control 48 h',()=>{const r=decide(base({group:'man',prostate:true}));assert.ok(has(r.drugs.map(x=>x.name),'Ciprofloxacino'));assert.ok(has(r.follow,'48 horas'));assert.ok(has(r.exams,'urocultivo'));});
 test('Dos años expresados en años equivalen a 24 meses',()=>{assert.equal(window.PROA_ITU_AGE_TO_MONTHS(2,null),24);});
 test('Menor de un año: dos meses activa circuito de derivación',()=>{const m=window.PROA_ITU_AGE_TO_MONTHS(0,2);assert.equal(m,2);const r=decide(base({group:'child',age:m}));assert.ok(has([r.priority],'urgente'));});
 test('Lactante sin meses especificados: no se calcula edad',()=>{assert.equal(window.PROA_ITU_AGE_TO_MONTHS(0,null),null);});
 test('Interfaz: sin botón de copia y con contacto institucional',()=>{assert.ok(!html.includes('id="copy"'));assert.ok(html.includes('id="prostateOption"'));assert.ok(html.includes('id="ageYears"'));assert.ok(html.includes('drmunozricardo@gmail.com'));});
-console.log('OK: 24 escenarios y verificaciones clínicas comprobados.');
+test('Prostatitis: cotrimoxazol dirigido solo con antibiograma',()=>{const r=decide(base({group:'man',prostate:true,culture:'positive'}));assert.ok(has(r.drugs.map(x=>x.name),'Cotrimoxazol'));assert.ok(has(r.drugs.map(x=>x.note),'susceptibilidad'));});
+test('Prostatitis: con riesgo de resistencia se omite empírico quinolona',()=>{const r=decide(base({group:'man',prostate:true,resistant:true}));assert.ok(!has(r.drugs.map(x=>x.name),'Ciprofloxacino'));});
+test('Prostatitis: alergia a quinolonas sin cultivo no genera antibiótico automático',()=>{const r=decide(base({group:'man',prostate:true,allergy:'quinolone'}));assert.equal(r.drugs.length,0);});
+test('Prostatitis: sepsis deriva inmediatamente',()=>{const r=decide(base({group:'man',prostate:true,sepsis:true}));assert.equal(r.drugs.length,0);assert.ok(has([r.priority],'urgente'));});
+test('Varón sin sospecha prostática conserva esquema de cistitis y no muestra cipro',()=>{const r=decide(base({group:'man',prostate:false}));assert.ok(has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(!has(r.drugs.map(x=>x.name),'Ciprofloxacino'));});
+test('Pediatría: no se ofrecen formulaciones no disponibles',()=>{const r=decide(base({group:'child',age:48,weight:16}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(!has(r.drugs.map(x=>x.name),'Cotrimoxazol'));});
+test('Embarazo: no ofrecer cefalexina y mostrar cefadroxilo según PROA',()=>{const r=decide(base({group:'pregnant',weeks:36}));assert.ok(has(r.drugs.map(x=>x.name),'Cefadroxilo'));assert.ok(!has(r.drugs.map(x=>x.name),'Cefalexina'));});
+console.log('OK: 31 escenarios y verificaciones clínicas comprobados.');

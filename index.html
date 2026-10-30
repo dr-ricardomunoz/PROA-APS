@@ -60,7 +60,7 @@ button{min-height:45px;border:0;border-radius:8px;padding:.7rem 1rem;font-size:.
 .sectionResult li{margin:.4rem 0;font-size:.87rem}
 .drug{border-left:4px solid var(--green);border-radius:8px;border-top:1px solid var(--edge);border-right:1px solid var(--edge);border-bottom:1px solid var(--edge);padding:.85rem;margin:.55rem 0}
 .drug.alt{border-left-color:var(--primary)}.drug.warn{border-left-color:#f59e0b;background:#fffbeb}
-.drug .name{font-weight:800;font-size:.9rem}
+.drug .tier{color:var(--primary);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.035em;margin-bottom:.2rem}.drug .name{font-weight:800;font-size:.9rem}
 .drug .dose{font-weight:600;font-size:.86rem;margin:.2rem 0}
 .drug .note{font-size:.77rem;color:#586170;margin:.3rem 0 0}
 .small{font-size:.76rem;color:var(--muted);line-height:1.55}
@@ -117,7 +117,7 @@ footer{max-width:1190px;margin:0 auto;padding:1.4rem 1rem 2rem;text-align:center
 </div>
 <div class="field"><label class="fieldlabel" for="culture">Urocultivo disponible</label><select id="culture"><option value="none">No solicitado / sin resultado</option><option value="pending">Solicitado, pendiente</option><option value="positive">Positivo con antibiograma</option><option value="negative">Negativo</option></select></div>
 <div class="grid2">
-<div class="field"><label class="fieldlabel" for="allergy">Alergias</label><select id="allergy"><option value="unknown">No verificadas</option><option value="none">Ninguna conocida</option><option value="beta">Betalactámicos</option><option value="sulfa">Sulfonamidas</option><option value="nitro">Nitrofurantoína</option><option value="other">Otras / múltiples</option></select></div>
+<div class="field"><label class="fieldlabel" for="allergy">Alergias</label><select id="allergy"><option value="unknown">No verificadas</option><option value="none">Ninguna conocida</option><option value="beta">Betalactámicos</option><option value="sulfa">Sulfonamidas</option><option value="nitro">Nitrofurantoína</option><option value="quinolone">Fluoroquinolonas</option><option value="other">Otras / múltiples</option></select></div>
 <div class="field"><label class="fieldlabel" for="gfr">TFGe si disponible</label><input id="gfr" type="number" min="1" max="150" placeholder="ml/min/1,73 m²"></div>
 </div>
 <label class="option" style="margin-bottom:1rem"><input type="checkbox" id="g6pd"> Déficit de G6PD conocido</label>
@@ -160,6 +160,7 @@ function add(a,t){a.push(t);}
 function safety(d,s){
 if(s.allergy==="unknown")add(d.warnings,"Verificar alergias antes de prescribir.");
 if(s.allergy==="other")add(d.warnings,"Alergias múltiples u otras: selección antimicrobiana individual.");
+if(s.allergy==="quinolone")add(d.warnings,"Alergia a fluoroquinolonas: no indicar ciprofloxacino.");
 if(s.gfr===null)add(d.warnings,"Verificar función renal según edad y antecedentes; no se informó TFGe.");
 if(s.gfr!==null&&s.gfr<30)add(d.warnings,"TFGe <30: no utilizar nitrofurantoína (EAU 2026); revisar ajuste de otros fármacos.");
 if(s.g6pd)add(d.warnings,"Déficit G6PD: evitar nitrofurantoína.");
@@ -174,7 +175,7 @@ if(s.culture==="negative")return;
 if(w<28&&!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
 add(d.drugs,ab("Nitrofurantoína · primera línea PROA","100 mg VO cada 8 h durante 7 días","Solo ITU baja. Ajustar al antibiograma.","first"));
 if(s.allergy!=="beta"&&s.allergy!=="other")
-add(d.drugs,ab("Cefalexina · alternativa NICE NG109","500 mg VO cada 12 h durante 7 días","NICE NG109. No está incluida en PROA ITU V.01, que contempla cefadroxilo; validar sustitución y disponibilidad local.","alt"));
+add(d.drugs,ab("Cefadroxilo · opción PROA","500 mg VO cada 12 h durante 7 días","Alternativa del protocolo institucional. Revisar alergias y antibiograma.",d.drugs.length?"alt":"first"));
 if(s.culture==="positive"&&s.allergy!=="beta"&&s.allergy!=="other")
 add(d.drugs,ab("Amoxicilina/ácido clavulánico · solo con antibiograma","875/125 mg VO cada 12 h durante 7 días","Indicación exclusiva con susceptibilidad documentada según PROA local.","alt"));
 safety(d,s);
@@ -196,9 +197,26 @@ if(s.weight!==null&&!good)add(d.warnings,"Peso fuera del rango válido: cálculo
 if(s.allergy!=="beta"&&s.allergy!=="other")
 add(d.drugs,ab("Cefadroxilo · opción PROA",good?fmt(s.weight*25)+" mg por dosis VO cada 12 h (50 mg/kg/día). Duración local: 3–4 días.":"50 mg/kg/día VO divididos cada 12 h por 3–4 días (pauta local).","Solo ITU baja afebril si resistencia de E. coli a cefadroxilo <10%. Validar duración, máximo por dosis, peso y presentación.","first"));
 if(s.allergy!=="sulfa"&&s.allergy!=="other")
-add(d.drugs,ab("Cotrimoxazol · alternativa",good?"Trimetoprim "+fmt(s.weight*4)+" mg por dosis cada 12 h. Duración local: 3–5 días.":"TMP 8 mg/kg/día y SMX 40 mg/kg/día divididos cada 12 h durante 3–5 días.","Suspensión no disponible en APS según protocolo. Verificar límites de edad, formulación y disponibilidad.","warn"));
+add(d.warnings,"Cotrimoxazol pediátrico: la suspensión figura como no disponible en APS; consultar Farmacia/PROA si es necesaria una alternativa.");
 if(!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
-add(d.drugs,ab("Nitrofurantoína · alternativa",good?fmt(s.weight*1.25)+"–"+fmt(s.weight*1.75)+" mg por dosis cada 6 h. Duración local: 3–4 días.":"5–7 mg/kg/día divididos cada 6 h, máximo 100 mg/dosis, por 3–4 días.","No disponible en APS según protocolo; no usar en ITU febril o complicada. Verificar edad mínima.","warn"));
+add(d.warnings,"Nitrofurantoína pediátrica: el protocolo indica que no está disponible en APS y no debe usarse en ITU febril o complicada.");
+safety(d,s);
+}
+function prostateDrugs(d,s){
+if(s.culture==="negative"){
+add(d.actions,"Urocultivo negativo: reconsiderar prostatitis bacteriana, tratamientos previos y diagnósticos alternativos.");
+return;
+}
+if(!s.resistant&&s.allergy!=="quinolone"&&s.allergy!=="other"){
+add(d.drugs,ab("Ciprofloxacino · opción empírica PROA","500 mg VO cada 12 horas por 14 días; revisar duración al día 14.","El protocolo incluye 7–14 días y la señala como segunda línea. Se utiliza el extremo de 14 días recomendado por NICE NG110 para prostatitis. Verificar resistencias locales, contraindicaciones e interacciones; ajustar al antibiograma.","empiric"));
+}else{
+add(d.warnings,"Evitar elección empírica de ciprofloxacino ante alergia a fluoroquinolonas, otras alergias relevantes o riesgo de resistencia. Consultar PROA/Farmacia.");
+}
+if(s.culture==="positive"&&s.allergy!=="sulfa"&&s.allergy!=="other"){
+add(d.drugs,ab("Cotrimoxazol · alternativa dirigida","160/800 mg VO cada 12 horas por 14 días.","Considerar solo con susceptibilidad demostrada en antibiograma y revisión clínica. Un cultivo positivo no confirma sensibilidad a este fármaco.","alt"));
+}else{
+add(d.actions,"Si el antibiograma confirma sensibilidad, considerar cotrimoxazol 160/800 mg VO cada 12 horas por 14 días según PROA, previa revisión clínica.");
+}
 safety(d,s);
 }
 function decide(s){
@@ -240,6 +258,23 @@ add(d.actions,"Evaluar otras causas: vaginitis, uretritis/ITS, litiasis, irritac
 add(d.exams,"Solicitar orina completa y urocultivo con antibiograma antes de decidir manejo.");
 add(d.actions,"Evitar tratamiento antibiótico automático mientras no se aclare la sospecha.");
 if(preg)add(d.follow,"En embarazo, revisar precozmente resultados y mantener seguimiento obstétrico.");return d;
+}
+if(man&&s.prostate){
+d=result("Sospecha de prostatitis aguda","Cultivo y tratamiento condicionado","amber");
+add(d.actions,"Evaluar signos vitales, dolor perineal, síntomas obstructivos, retención, sepsis o sospecha de absceso. Si hay gravedad, derivar a urgencia.");
+add(d.actions,"No utilizar nitrofurantoína: no alcanza concentraciones prostáticas suficientes.");
+add(d.exams,"Solicitar orina completa y urocultivo con antibiograma antes del antibiótico. Considerar estudio de ITS según antecedentes.");
+if(s.catheter){
+add(d.warnings,"Portador de catéter: evaluar ITU asociada a sonda y necesidad de retirada o recambio. Antimicrobiano requiere selección individual.");
+}else if(s.culture==="negative"){
+add(d.actions,"Ante urocultivo negativo, reevaluar diagnóstico, muestra y antibióticos previos; evitar tratamiento empírico automático.");
+}else{
+prostateDrugs(d,s);
+}
+add(d.follow,"Control clínico a las 48 horas: evaluar respuesta y revisar urocultivo/antibiograma si está disponible. Ajustar antibiótico según susceptibilidad.");
+add(d.follow,"Sin mejoría en 48 horas, empeoramiento, retención, sepsis o sospecha de absceso: derivar a urgencias hospitalarias.");
+add(d.follow,"Revisar duración al día 14 y considerar extender hasta 28 días solo si continúa indicado según evolución clínica (NICE NG110).");
+return d;
 }
 if(upper){
 d=result("Sospecha de pielonefritis / ITU sistémica","Evaluación prioritaria","amber");
@@ -284,8 +319,7 @@ add(d.follow,"Si persiste positividad y se ajusta por resistencia: PROA indica n
 }else if(man){
 add(d.exams,"Orina completa siempre; realizar urocultivo con antibiograma en varones (NICE/seguridad terapéutica).");
 add(d.actions,"Preguntar por fiebre, dolor perineal y síntomas obstructivos; excluir compromiso prostático.");
-if(s.prostate){d.priority="Posible prostatitis: no usar esquema de cistitis simple";d.level="amber";add(d.actions,"Evaluar prostatitis aguda y necesidad de derivación; no utilizar nitrofurantoína como tratamiento de prostatitis.");add(d.warnings,"Por sospecha de prostatitis se omiten esquemas empíricos breves.");}
-else adultDrugs(d,s,true);
+adultDrugs(d,s,true);
 add(d.follow,"Control clínico en 48–72 h; ajustar al urocultivo y respuesta.");
 }else{
 add(d.exams,"Mujer con clínica típica de cistitis y sin factores de riesgo: no requiere urocultivo rutinario.");
@@ -313,8 +347,22 @@ if(d.level==="red"||d.level==="amber"){var banner=document.createElement("div");
 d.warnings.forEach(function(t){var b=document.createElement("div");b.className="box amber";b.textContent=t;warnings.appendChild(b);});
 fillList("actions",d.actions);fillList("exams",d.exams);fillList("follow",d.follow);
 var drugs=E("drugs");drugs.replaceChildren();
-if(!d.drugs.length){var note=document.createElement("p");note.className="hint";note.textContent="No se habilita pauta empírica automática para esta presentación. Resolver diagnóstico o antibiograma según indicación.";drugs.appendChild(note);}
-d.drugs.forEach(function(x){var box=document.createElement("div");box.className="drug "+(x.kind==="first"?"":x.kind==="warn"?"warn":"alt");["name","dose","note"].forEach(function(k){var e=document.createElement("div");e.className=k;e.textContent=x[k];box.appendChild(e);});drugs.appendChild(box);});
+if(!d.drugs.length){
+var note=document.createElement("div");
+var needsAlternative=d.title==="Compatible con ITU baja"||d.title==="Sospecha de prostatitis aguda";
+note.className=needsAlternative?"box amber":"hint";
+note.textContent=needsAlternative?"Sin alternativa adecuada en APS con los datos ingresados. Consultar equipo PROA/Farmacia para definir tratamiento. Valorar acceso a un medicamento externo bajo prescripción y capacidad de adquisición del usuario, o derivación según gravedad.":"No se habilita tratamiento antibiótico automático para esta presentación. Confirmar diagnóstico, estudio o necesidad de derivación.";
+drugs.appendChild(note);
+}
+d.drugs.forEach(function(x){
+var box=document.createElement("div");
+box.className="drug "+(x.kind==="first"?"":x.kind==="warn"?"warn":"alt");
+var tier=document.createElement("div");tier.className="tier";
+tier.textContent=x.kind==="first"?"Primera línea":x.kind==="empiric"?"Opción empírica condicionada":x.kind==="warn"?"Requiere validación/disponibilidad":"Alternativa";
+box.appendChild(tier);
+["name","dose","note"].forEach(function(k){var e=document.createElement("div");e.className=k;e.textContent=x[k];box.appendChild(e);});
+drugs.appendChild(box);
+});
 }
 function toggle(){var g=E("group").value;E("pregfield").classList.toggle("hidden",g!=="pregnant");E("childfields").classList.toggle("hidden",g!=="child");E("infantfield").classList.toggle("hidden",!(g==="child"&&E("ageYears").value==="0"));E("prostateOption").classList.toggle("hidden",g!=="man");if(g!=="man")E("prostate").checked=false;}
 function calculate(){if(!E("group").value||!E("presentation").value){E("initial").classList.remove("hidden");E("out").classList.add("hidden");E("initial").querySelector("p").textContent="Seleccione población y presentación clínica para continuar.";return;}
