@@ -43,7 +43,6 @@ input[type=checkbox]{accent-color:var(--primary);width:17px;height:17px;flex:0 0
 button{min-height:45px;border:0;border-radius:8px;padding:.7rem 1rem;font-size:.88rem;font-weight:800;cursor:pointer}
 .primary{flex:1;background:var(--green);color:white}.primary:hover{background:#67a129}
 .secondary{background:white;color:var(--text);border:1px solid #cfd4dc}
-.purple{background:var(--primary);color:white}
 .titlebar{display:flex;gap:.6rem;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
 .titlebar h2{font-size:1.1rem}
 .pilot{font-weight:800;font-size:.7rem;color:#854d0e;background:#fef3c7;padding:.2rem .55rem;border-radius:6px}
@@ -82,11 +81,12 @@ footer{max-width:1190px;margin:0 auto;padding:1.4rem 1rem 2rem;text-align:center
 <section class="card">
 <div class="section"><span class="num">1</span>Población</div>
 <div class="field"><label class="fieldlabel" for="group">¿Quién consulta?</label><select id="group"><option value="">Seleccionar…</option><option value="woman">Mujer adulta no embarazada</option><option value="pregnant">Embarazada</option><option value="man">Hombre adulto</option><option value="child">Niño, niña o adolescente menor de 18 años</option></select></div>
-<div id="pregfield" class="field hidden"><label class="fieldlabel" for="weeks">Edad gestacional en semanas</label><input id="weeks" type="number" inputmode="numeric" min="1" max="42" placeholder="Ej.: 30"><p class="hint">Permite aplicar restricciones de nitrofurantoína y cotrimoxazol.</p></div>
+<div id="pregfield" class="field hidden"><label class="fieldlabel" for="weeks">Edad gestacional en semanas</label><input id="weeks" type="number" inputmode="numeric" min="1" max="42" placeholder="Ej.: 30"><p class="hint">Permite aplicar las precauciones de tratamiento según edad gestacional.</p></div>
 <div id="childfields" class="grid2 hidden">
-<div class="field"><label class="fieldlabel" for="age">Edad en meses</label><input id="age" type="number" inputmode="numeric" min="0" max="215" placeholder="Ej.: 26"></div>
+<div class="field"><label class="fieldlabel" for="ageYears">Edad en años</label><input id="ageYears" type="number" inputmode="numeric" min="0" max="17" step="1" placeholder="Ej.: 2"></div>
 <div class="field"><label class="fieldlabel" for="weight">Peso (kg), opcional</label><input id="weight" type="number" inputmode="decimal" min="1" max="200" step=".1" placeholder="Ej.: 12.5"></div>
 </div>
+<div id="infantfield" class="field hidden"><label class="fieldlabel" for="infantMonths">Edad en meses (si es menor de 1 año)</label><input id="infantMonths" type="number" inputmode="numeric" min="0" max="11" step="1" placeholder="Ej.: 2"><p class="hint">Para lactantes menores de un año, seleccione 0 años e indique los meses cumplidos.</p></div>
 </section>
 <section class="card">
 <div class="section"><span class="num">2</span>Presentación clínica</div>
@@ -104,6 +104,7 @@ footer{max-width:1190px;margin:0 auto;padding:1.4rem 1rem 2rem;text-align:center
 <label class="option"><input type="checkbox" id="unable"> Mala tolerancia oral, vómitos o deshidratación</label>
 <label class="option"><input type="checkbox" id="obstruct"> Obstrucción, retención o deterioro renal agudo</label>
 <label class="option"><input type="checkbox" id="anomaly"> Uropatía importante o inmunodeficiencia</label>
+<label class="option hidden" id="prostateOption"><input type="checkbox" id="prostate"> Dolor perineal, síntomas obstructivos o sospecha de prostatitis (hombres)</label>
 </div></section>
 <section class="card">
 <div class="section"><span class="num">3</span>Contexto y seguridad</div>
@@ -113,7 +114,6 @@ footer{max-width:1190px;margin:0 auto;padding:1.4rem 1rem 2rem;text-align:center
 <label class="option"><input type="checkbox" id="failed"> Falta de respuesta o recurrencia precoz</label>
 <label class="option"><input type="checkbox" id="resistant"> Riesgo de resistencia / cultivo previo resistente</label>
 <label class="option"><input type="checkbox" id="endouro"> Procedimiento endourológico invasivo próximo</label>
-<label class="option"><input type="checkbox" id="prostate"> Posible compromiso prostático (varones)</label>
 </div>
 <div class="field"><label class="fieldlabel" for="culture">Urocultivo disponible</label><select id="culture"><option value="none">No solicitado / sin resultado</option><option value="pending">Solicitado, pendiente</option><option value="positive">Positivo con antibiograma</option><option value="negative">Negativo</option></select></div>
 <div class="grid2">
@@ -136,24 +136,24 @@ footer{max-width:1190px;margin:0 auto;padding:1.4rem 1rem 2rem;text-align:center
 <div class="sectionResult"><h3>2. Orina completa / urocultivo</h3><ul id="exams"></ul></div>
 <div class="sectionResult"><h3>3. Tratamiento</h3><div id="drugs"></div></div>
 <div class="sectionResult"><h3>4. Control y derivación</h3><ul id="follow"></ul></div>
-<button id="copy" class="purple" type="button">Copiar orientación (sin datos personales)</button><p id="copystate" class="small" role="status"></p>
 </div>
 </section>
 </aside></div>
 <section class="card" id="fuentes">
 <h2 style="font-size:1.08rem;border-bottom:1px solid var(--edge);padding-bottom:.6rem">Fundamento y advertencias</h2>
-<p>Base institucional: <strong>Protocolo tratamiento de infecciones del tracto urinario, PROA ITU V.01, CESFAM Dr. Mario Salcedo, agosto de 2026</strong>, páginas 5–15. Se respeta la clasificación, indicación de urocultivo y seguimiento institucional. Las discrepancias o precauciones se presentan de manera explícita.</p>
+<p>Base institucional: <strong>Protocolo de tratamiento de las infecciones del tracto urinario, CESFAM Dr. Mario Salcedo Sepúlveda, agosto de 2026.</strong></p>
 <div class="box amber"><strong>Validación pendiente:</strong> las pautas de pielonefritis ambulatoria, la duración pediátrica y la duración de cotrimoxazol en embarazo requieren revisión del equipo PROA/Farmacia antes de habilitarse como indicaciones automáticas. Esta versión es piloto.</div>
 <p class="small">Fuentes externas de contraste: <a href="https://uroweb.org/guidelines/urological-infections/chapter/the-guideline" target="_blank" rel="noopener">EAU 2026</a> · <a href="https://www.acog.org/clinical/clinical-guidance/clinical-consensus/articles/2023/08/urinary-tract-infections-in-pregnant-individuals" target="_blank" rel="noopener">ACOG embarazo</a> · <a href="https://www.nice.org.uk/guidance/ng224/chapter/Recommendations" target="_blank" rel="noopener">NICE NG224 pediatría</a> · <a href="https://www.nice.org.uk/guidance/ng109/chapter/Recommendations" target="_blank" rel="noopener">NICE NG109 adultos</a>. No sustituye la valoración clínica ni el ajuste por antibiograma, función renal, alergias y epidemiología local.</p>
 </section></div>
-<footer>CESFAM Dr. Mario Salcedo Sepúlveda · Herramientas clínicas PROA APS · Versión piloto 1.0 · Octubre 2026</footer>
+<footer>CESFAM Dr. Mario Salcedo Sepúlveda · Versión piloto · Octubre 2026<br>Realizado por <strong>Dr. Ricardo Muñoz</strong> · Contacto: <a href="mailto:drmunozricardo@gmail.com">drmunozricardo@gmail.com</a></footer>
 <script>
 (function(){
 "use strict";
-var fields=["group","weeks","age","weight","presentation","sepsis","unable","obstruct","anomaly","catheter","recurrent","failed","resistant","endouro","prostate","culture","allergy","gfr","g6pd"];
+var fields=["group","weeks","ageYears","infantMonths","weight","presentation","sepsis","unable","obstruct","anomaly","catheter","recurrent","failed","resistant","endouro","prostate","culture","allergy","gfr","g6pd"];
 function E(id){return document.getElementById(id);}
 function N(id){var x=E(id).value.trim();return x===""?null:Number(x);}
-function state(){var s={};fields.forEach(function(k){var e=E(k);s[k]=e.type==="checkbox"?e.checked:(e.type==="number"?N(k):e.value);});return s;}
+function ageMonthsFromYears(years,infantMonths){if(years===null||!Number.isInteger(years)||years<0||years>17)return null;if(years===0)return Number.isInteger(infantMonths)&&infantMonths>=0&&infantMonths<=11?infantMonths:null;return years*12;}
+function state(){var s={};fields.forEach(function(k){var e=E(k);s[k]=e.type==="checkbox"?e.checked:(e.type==="number"?N(k):e.value);});s.age=ageMonthsFromYears(s.ageYears,s.infantMonths);return s;}
 function ab(name,dose,note,kind){return{name:name,dose:dose,note:note,kind:kind||"alt"};}
 function result(title,priority,level){return{title:title,priority:priority,level:level||"green",actions:[],exams:[],drugs:[],follow:[],warnings:[]};}
 function add(a,t){a.push(t);}
@@ -170,26 +170,23 @@ function pregnancyDrugs(d,s){
 var w=s.weeks;
 if(w>=36)add(d.warnings,"Evitar nitrofurantoína desde 36 semanas o parto inminente (PROA, tabla 4).");
 else if(w>=28)add(d.warnings,"Entre las semanas 28 y 35 no se habilita nitrofurantoína automáticamente: la tabla general del PROA indica evitarla en el tercer trimestre y la tabla gestacional desde semana 36. Validar con PROA.");
-if(w<14||w>=32)add(d.warnings,"Evitar cotrimoxazol en primer trimestre y desde semana 32 (PROA, tabla 4).");
 if(s.culture==="negative")return;
 if(w<28&&!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
-add(d.drugs,ab("Nitrofurantoína · opción PROA","100 mg VO cada 8 h durante 7 días","Exclusiva de ITU baja. Confirmar formulación y función renal; desde tercer trimestre validar discrepancia local.","first"));
+add(d.drugs,ab("Nitrofurantoína · primera línea PROA","100 mg VO cada 8 h durante 7 días","Solo ITU baja. Ajustar al antibiograma.","first"));
 if(s.allergy!=="beta"&&s.allergy!=="other")
-add(d.drugs,ab("Cefadroxilo · opción PROA","500 mg VO cada 12 h durante 7 días","Revisar alergia a betalactámicos y ajustar según antibiograma.","alt"));
+add(d.drugs,ab("Cefalexina · alternativa NICE NG109","500 mg VO cada 12 h durante 7 días","NICE NG109. No está incluida en PROA ITU V.01, que contempla cefadroxilo; validar sustitución y disponibilidad local.","alt"));
 if(s.culture==="positive"&&s.allergy!=="beta"&&s.allergy!=="other")
 add(d.drugs,ab("Amoxicilina/ácido clavulánico · solo con antibiograma","875/125 mg VO cada 12 h durante 7 días","Indicación exclusiva con susceptibilidad documentada según PROA local.","alt"));
-add(d.warnings,"Cotrimoxazol: PROA local consigna 160/800 mg cada 12 h por 3 días; ACOG recomienda en general cursos de 5–7 días en embarazo. No ofrecer esta pauta automáticamente hasta validación.");
 safety(d,s);
 }
 function adultDrugs(d,s,male){
 if(!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
-add(d.drugs,ab("Nitrofurantoína macrocristales · primera línea","100 mg VO cada 6–8 h por "+(male?"7":"5")+" días","Pauta exacta del protocolo local. Confirmar presentación: no extrapolar a liberación modificada. En varones descartar compromiso prostático.","first"));
+add(d.drugs,ab("Nitrofurantoína macrocristales · primera línea","100 mg VO cada 6–8 h por "+(male?"7":"5")+" días",male?"Solo ITU baja. Descartar compromiso prostático.":"Solo ITU baja. Según protocolo local.","first"));
 if(s.allergy!=="sulfa"&&s.allergy!=="other")
 add(d.drugs,ab("Cotrimoxazol · alternativa","160/800 mg VO cada 12 h por "+(male?"7":"3")+" días","Solo si E. coli tiene resistencia local <20% o susceptibilidad documentada; evitar uso empírico tras uso en 3–6 meses.","alt"));
 if(!male&&s.allergy!=="beta"&&s.allergy!=="other")
 add(d.drugs,ab("Cefadroxilo · alternativa","500 mg VO cada 12 h por 3 días","Revisar epidemiología local y susceptibilidad.","alt"));
 if(male)add(d.warnings,"Se excluyen pautas breves de cefadroxilo y ciprofloxacino para varones sin validar duración y compromiso prostático.");
-else add(d.warnings,"Ciprofloxacino figura como alternativa local, pero EAU 2026 recomienda reservar fluoroquinolonas si no son apropiadas las opciones habituales.");
 safety(d,s);
 }
 function fmt(x){return Number(x.toFixed(1)).toLocaleString("es-CL",{maximumFractionDigits:1});}
@@ -202,14 +199,13 @@ if(s.allergy!=="sulfa"&&s.allergy!=="other")
 add(d.drugs,ab("Cotrimoxazol · alternativa",good?"Trimetoprim "+fmt(s.weight*4)+" mg por dosis cada 12 h. Duración local: 3–5 días.":"TMP 8 mg/kg/día y SMX 40 mg/kg/día divididos cada 12 h durante 3–5 días.","Suspensión no disponible en APS según protocolo. Verificar límites de edad, formulación y disponibilidad.","warn"));
 if(!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
 add(d.drugs,ab("Nitrofurantoína · alternativa",good?fmt(s.weight*1.25)+"–"+fmt(s.weight*1.75)+" mg por dosis cada 6 h. Duración local: 3–4 días.":"5–7 mg/kg/día divididos cada 6 h, máximo 100 mg/dosis, por 3–4 días.","No disponible en APS según protocolo; no usar en ITU febril o complicada. Verificar edad mínima.","warn"));
-add(d.warnings,"Las duraciones pediátricas de 3–4 días descritas en PROA local requieren revisión, especialmente si existe fiebre. No aplicar estos esquemas a pielonefritis.");
 safety(d,s);
 }
 function decide(s){
 var d=result("Sospecha de infección urinaria","Evaluación clínica","green");
 var preg=s.group==="pregnant",kid=s.group==="child",man=s.group==="man",silent=s.presentation==="asymptomatic",upper=s.presentation==="upper",atyp=s.presentation==="atypical";
 if(preg&&(!Number.isInteger(s.weeks)||s.weeks<1||s.weeks>42)){d.title="Ingrese edad gestacional";d.priority="Datos pendientes";add(d.actions,"Completar semanas de embarazo antes de indicar medicamentos.");return d;}
-if(kid&&(!Number.isInteger(s.age)||s.age<0||s.age>215)){d.title="Ingrese edad pediátrica";d.priority="Datos pendientes";add(d.actions,"Especificar edad en meses (0–215).");return d;}
+if(kid&&(!Number.isInteger(s.age)||s.age<0||s.age>215)){d.title="Ingrese edad pediátrica";d.priority="Datos pendientes";add(d.actions,"Introducir años cumplidos (0–17) y, en menores de un año, edad en meses (0–11).");return d;}
 if(s.sepsis||s.unable||s.obstruct||(kid&&s.age<3)||(preg&&upper)||(kid&&s.anomaly)){
 d=result(kid&&s.age<3?"ITU sospechada en menor de 3 meses":"Infección urinaria: sospecha de gravedad","Derivación hospitalaria urgente","red");
 add(d.actions,"Derivar a urgencias hospitalarias para evaluación y tratamiento; no continuar algoritmo rutinario de cistitis.");
@@ -319,20 +315,18 @@ fillList("actions",d.actions);fillList("exams",d.exams);fillList("follow",d.foll
 var drugs=E("drugs");drugs.replaceChildren();
 if(!d.drugs.length){var note=document.createElement("p");note.className="hint";note.textContent="No se habilita pauta empírica automática para esta presentación. Resolver diagnóstico o antibiograma según indicación.";drugs.appendChild(note);}
 d.drugs.forEach(function(x){var box=document.createElement("div");box.className="drug "+(x.kind==="first"?"":x.kind==="warn"?"warn":"alt");["name","dose","note"].forEach(function(k){var e=document.createElement("div");e.className=k;e.textContent=x[k];box.appendChild(e);});drugs.appendChild(box);});
-E("copystate").textContent="";
 }
-function toggle(){E("pregfield").classList.toggle("hidden",E("group").value!=="pregnant");E("childfields").classList.toggle("hidden",E("group").value!=="child");}
+function toggle(){var g=E("group").value;E("pregfield").classList.toggle("hidden",g!=="pregnant");E("childfields").classList.toggle("hidden",g!=="child");E("infantfield").classList.toggle("hidden",!(g==="child"&&E("ageYears").value==="0"));E("prostateOption").classList.toggle("hidden",g!=="man");if(g!=="man")E("prostate").checked=false;}
 function calculate(){if(!E("group").value||!E("presentation").value){E("initial").classList.remove("hidden");E("out").classList.add("hidden");E("initial").querySelector("p").textContent="Seleccione población y presentación clínica para continuar.";return;}
 last=decide(state());render(last);
 if(window.innerWidth<901)E("results").scrollIntoView({behavior:"smooth",block:"start"});
 }
 E("group").addEventListener("change",toggle);
+E("ageYears").addEventListener("input",toggle);
 E("calculate").addEventListener("click",calculate);
 E("reset").addEventListener("click",function(){fields.forEach(function(k){var e=E(k);if(e.type==="checkbox")e.checked=false;else if(e.type==="number")e.value="";else e.selectedIndex=0;});toggle();E("out").classList.add("hidden");E("initial").classList.remove("hidden");last=null;E("group").focus();});
-E("copy").addEventListener("click",async function(){if(!last)return;var parts=[last.title,last.priority,"CONDUCTA",...last.actions,"EXÁMENES",...last.exams,"TRATAMIENTO",...last.drugs.map(function(a){return a.name+" - "+a.dose+" - "+a.note;}),"SEGUIMIENTO",...last.follow,"ADVERTENCIAS",...last.warnings,"Fuente PROA ITU V.01 agosto 2026 · Piloto pendiente de validación."];
-try{await navigator.clipboard.writeText(parts.join("\n"));E("copystate").textContent="Orientación copiada.";}catch(err){E("copystate").textContent="El navegador bloqueó la copia; seleccione el texto manualmente.";}}
-);
 window.PROA_ITU_DECIDE=decide;
+window.PROA_ITU_AGE_TO_MONTHS=ageMonthsFromYears;
 toggle();
 })();
 </script>
