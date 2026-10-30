@@ -29,4 +29,6 @@ test('Sepsis: derivación urgente sin régimen automático',()=>{const r=decide(
 test('Función renal 25: no sugiere nitrofurantoína',()=>{const r=decide(base({gfr:25}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));});
 test('Recurrencia: solicitar urocultivo',()=>{const r=decide(base({recurrent:true}));assert.ok(has(r.exams,'urocultivo'));});
 test('No hay datos gestacionales: detener esquema',()=>{const r=decide(base({group:'pregnant'}));assert.equal(r.drugs.length,0);});
-console.log('OK: 16 escenarios clínicos comprobados.');
+test('Embarazo tercer trimestre 31 semanas: nitrofurantoína requiere validación',()=>{const r=decide(base({group:'pregnant',weeks:31}));assert.ok(!has(r.drugs.map(x=>x.name),'Nitrofurantoína'));assert.ok(has(r.warnings,'28 y 35'));});
+test('Cistitis con urocultivo negativo: no pauta automática',()=>{const r=decide(base({culture:'negative'}));assert.equal(r.drugs.length,0);assert.ok(has(r.actions,'Urocultivo negativo'));});
+console.log('OK: 18 escenarios clínicos comprobados.');

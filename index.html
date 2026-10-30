@@ -170,10 +170,10 @@ if(!d.drugs.length)add(d.warnings,"Sin esquema empírico habilitado con estas re
 function pregnancyDrugs(d,s){
 var w=s.weeks;
 if(w>=36)add(d.warnings,"Evitar nitrofurantoína desde 36 semanas o parto inminente (PROA, tabla 4).");
-else if(w>=28)add(d.warnings,"En tercer trimestre, tabla general recomienda evitar nitrofurantoína y tabla gestacional restringe desde semana 36: discrepancia pendiente de validación PROA.");
+else if(w>=28)add(d.warnings,"Entre las semanas 28 y 35 no se habilita nitrofurantoína automáticamente: la tabla general del PROA indica evitarla en el tercer trimestre y la tabla gestacional desde semana 36. Validar con PROA.");
 if(w<14||w>=32)add(d.warnings,"Evitar cotrimoxazol en primer trimestre y desde semana 32 (PROA, tabla 4).");
 if(s.culture==="negative")return;
-if(w<36&&!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
+if(w<28&&!s.g6pd&&s.allergy!=="nitro"&&s.allergy!=="other"&&(s.gfr===null||s.gfr>=30))
 add(d.drugs,ab("Nitrofurantoína · opción PROA","100 mg VO cada 8 h durante 7 días","Exclusiva de ITU baja. Confirmar formulación y función renal; desde tercer trimestre validar discrepancia local.","first"));
 if(s.allergy!=="beta"&&s.allergy!=="other")
 add(d.drugs,ab("Cefadroxilo · opción PROA","500 mg VO cada 12 h durante 7 días","Revisar alergia a betalactámicos y ajustar según antibiograma.","alt"));
@@ -258,6 +258,13 @@ add(d.follow,"Persistencia de fiebre a las 72 h o deterioro clínico: derivació
 return d;
 }
 d=result("Compatible con ITU baja","Manejo ambulatorio según evaluación","green");
+if(s.culture==="negative"){
+d.priority="Reevaluar diagnóstico antes de tratar";d.level="amber";
+add(d.actions,"Urocultivo negativo: revisar calidad de muestra, antibióticos previos y causas no infecciosas antes de iniciar o mantener una terapia empírica.");
+add(d.exams,"No repetir urocultivo de manera automática. Considerar nueva muestra si la sospecha persiste o la anterior no fue representativa.");
+add(d.follow,"Reevaluación clínica, especialmente si persiste fiebre, empeora o aparecen síntomas sistémicos.");
+return d;
+}
 if(s.catheter){
 d.priority="ITU asociada a catéter: estudio";d.level="amber";
 add(d.actions,"Confirmar síntomas atribuibles a ITU; valorar causas alternativas. No tratar piuria o bacteriuria aislada.");
